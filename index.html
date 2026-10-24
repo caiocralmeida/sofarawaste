@@ -1,0 +1,116 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>So Far, a Waste</title>
+<link rel="stylesheet" href="fullscreen.css">
+</head>
+<body>
+<div class="stage" id="stage">
+  <canvas id="c" width="640" height="360" aria-label="Tela do jogo"></canvas>
+
+  <div id="menu" class="ov menu">
+    <div class="card menu-card">
+      <div class="tag">Helix-Orbital · Arquivo 001</div>
+      <h2 class="title">So Far, a Waste</h2>
+      <p class="muted">Cada corrida zera. Algo fica.</p>
+      <button type="button" class="btn" id="bPlay">Jogar</button>
+      <button type="button" class="btn" id="bCont">Continuar</button>
+      <button type="button" class="btn" id="mDiary">Diário de Sucata</button>
+      <button type="button" class="btn" id="bOpt">Opções</button>
+      <label class="check"><input type="checkbox" id="mBtns"> Exibir botões na tela</label>
+      <p class="muted">Setas ou WASD andam. Espaço gruda e martela. E interage. Clique na superfície para construir torres. L abre o diário.</p>
+    </div>
+  </div>
+
+  <div id="opts" class="ov" hidden>
+    <div class="card">
+      <div class="tag">Opções</div>
+      <button type="button" class="btn" id="oSound">Som: ligado</button>
+      <button type="button" class="btn" id="oShake">Tremor de tela: ligado</button>
+      <label class="check"><input type="checkbox" id="oRot"> Forçar horizontal no celular</label>
+      <button type="button" class="btn danger" id="oReset">Apagar progresso</button>
+      <button type="button" class="btn" id="oBack">Voltar</button>
+    </div>
+  </div>
+
+  <div id="craft" class="ov" hidden>
+    <div class="card">
+      <div class="tag">Mesa de drones · Base Helix</div>
+      <p class="muted" id="craftNote"></p>
+      <div id="craftList"></div>
+      <button type="button" class="btn" id="cClose">Sair da mesa (Esc)</button>
+    </div>
+  </div>
+
+  <div id="diary" class="ov" hidden>
+    <div class="card">
+      <div class="tag">Diário de Sucata</div>
+      <div class="muted" id="dstats"></div>
+      <p class="muted">Equipamento se perde a cada loop. Pistas ficam.</p>
+      <ul id="dlist"></ul>
+      <button type="button" class="btn" id="dClose">Fechar (Esc)</button>
+    </div>
+  </div>
+
+  <div id="shipUp" class="ov" hidden>
+    <div class="card pc">
+      <div class="pc-head"><span class="tag">HELIX-ORBITAL · Terminal da nave</span><span class="muted" id="shipMemo"></span></div>
+      <div id="shipMenu">
+        <button type="button" class="btn" id="sTree">[1] Árvore de upgrades</button>
+        <button type="button" class="btn" id="sTowers">[2] Craft de torres</button>
+        <button type="button" class="btn danger" id="sLeave">[3] Sair do planeta</button>
+        <p class="muted">A saída exige o motor da base consertado (mesa de drones, na base) e 300 Matéria.</p>
+        <button type="button" class="btn" id="sClose">Fechar (Esc)</button>
+      </div>
+      <div id="treeView" hidden>
+        <p class="muted" id="treeMemo"></p>
+        <div id="treeList"></div>
+        <button type="button" class="btn" id="treeBack">Voltar</button>
+      </div>
+      <div id="towerView" hidden>
+        <p class="muted" id="towerMat"></p>
+        <div id="towerList"></div>
+        <button type="button" class="btn" id="towerBack">Voltar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="over" class="ov" hidden>
+    <div class="card">
+      <div class="tag">Fim da corrida</div>
+      <h2 class="title" style="font-size:44px" id="overMsg"></h2>
+      <p class="muted">O diário fica. O equipamento não.</p>
+      <button type="button" class="btn" id="oNew">Nova corrida</button>
+      <button type="button" class="btn" id="oTitle">Voltar ao título</button>
+    </div>
+  </div>
+
+  <div id="rotate"><div><div class="rot-icon"></div><p>Gire o celular para a horizontal para jogar.</p></div></div>
+  <div id="padL" class="pad padL" hidden>
+    <div class="dpad">
+      <span></span><button type="button" data-k="ArrowUp" aria-label="Cima">▲</button><span></span>
+      <button type="button" data-k="ArrowLeft" aria-label="Esquerda">◀</button>
+      <button type="button" data-k="ArrowDown" aria-label="Baixo">▼</button>
+      <button type="button" data-k="ArrowRight" aria-label="Direita">▶</button>
+    </div>
+  </div>
+  <div id="padR" class="pad padR" hidden>
+    <button type="button" data-k="Tab">Construir</button>
+    <button type="button" data-k="ShiftLeft">Dash</button>
+    <button type="button" class="big" data-k="Space">Grudar</button>
+    <button type="button" data-k="KeyE">E</button>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/surface.js"></script>
+<script src="js/cave.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
+
+</body></html>

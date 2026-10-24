@@ -1,0 +1,69 @@
+/* Tela cheia sempre: o jogo ocupa a janela inteira. Nada fora do canvas. */
+:root{--fg:#d6dde3;--muted:#8fa0ae;--accent:#ff8a1f;--cold:#7fe9ff;--line:#24323f;--danger:#ff4d6d;color-scheme:dark}
+html,body{height:100%;margin:0;background:#000;overflow:hidden}
+body{font:14px/1.5 "IBM Plex Mono",ui-monospace,Menlo,monospace;color:var(--fg)}
+.stage{position:fixed;inset:0;background:#000;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:block}
+button{font:inherit;color:var(--fg);cursor:pointer;touch-action:none;user-select:none}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Sobreposições dentro do jogo */
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(3,5,10,.7);z-index:5}
+.ov[hidden]{display:none!important}
+.ov.menu{background:linear-gradient(90deg,rgba(3,5,10,.92) 0%,rgba(3,5,10,.6) 45%,rgba(3,5,10,.05) 100%);justify-content:flex-start;padding-left:max(4%,env(safe-area-inset-left,0px))}
+.card{background:linear-gradient(180deg,#152334,#0c1520);border:1px solid #2a3c4e;box-shadow:0 20px 60px rgba(0,0,0,.6);padding:22px;max-width:440px;width:100%;max-height:88%;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.menu-card{max-width:360px;background:linear-gradient(180deg,rgba(21,35,52,.92),rgba(12,21,32,.92))}
+.title{font:400 64px/0.95 "VT323",monospace;margin:0 0 4px;color:var(--accent);text-shadow:0 0 22px rgba(255,138,31,.4)}
+.tag{color:var(--accent);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.muted{color:var(--muted);font-size:12px;margin:0}
+.btn{display:block;width:100%;text-align:left;background:rgba(16,27,39,.9);border:1px solid var(--line);border-left:3px solid transparent;padding:10px 12px;min-height:44px;font-size:14px}
+.btn:hover:not(:disabled){border-left-color:var(--accent);background:#17283a}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.danger{color:var(--danger)}
+.check{display:flex;align-items:center;gap:10px;padding:8px 2px;font-size:14px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:#ff8a1f}
+.row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
+.row small{color:var(--muted);display:block;font-size:12px}
+.row .btn{width:auto;text-align:center}
+#dlist{padding:0;margin:6px 0;list-style:none}
+#dlist li{border-top:1px solid var(--line);padding:10px 0;font-size:13px}
+
+/* Botões de toque (só com a opção marcada) */
+.pad{position:absolute;bottom:max(14px,env(safe-area-inset-bottom,0px));z-index:4;display:flex;gap:10px;align-items:flex-end}
+.pad[hidden]{display:none!important}
+.padL{left:max(14px,env(safe-area-inset-left,0px))}
+.padR{right:max(14px,env(safe-area-inset-right,0px))}
+.dpad{display:grid;grid-template-columns:repeat(3,52px);gap:6px}
+.dpad button,.padR button{background:rgba(16,27,39,.72);border:1px solid rgba(127,233,255,.25);min-width:52px;min-height:52px;padding:0 12px;color:var(--fg)}
+.padR button.big{min-width:120px;min-height:64px}
+
+/* Celular em retrato: pede para girar (o jogo é só na horizontal) */
+#rotate{display:none;position:fixed;inset:0;z-index:99;background:#05090f;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--fg)}
+#rotate p{color:var(--cold);font-size:16px;margin:14px 0 0}
+.rot-icon{width:46px;height:78px;margin:0 auto;border:3px solid var(--accent);border-radius:9px;animation:rot 2.4s ease-in-out infinite}
+@keyframes rot{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+@media (orientation: portrait) and (pointer: coarse){
+  #rotate{display:flex}
+  .stage{visibility:hidden}
+}
+/* Terminal da nave */
+.pc{max-width:600px;max-height:90%;overflow:auto;border:1px solid rgba(127,233,255,.35);background:#06101a}
+.pc-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tree-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.node{flex:1 1 170px;max-width:240px;text-align:left;background:#0b1622;border:1px solid #24323f;padding:8px 10px;color:var(--fg);display:flex;flex-direction:column;gap:2px;font:inherit}
+.node strong{font-size:13px}
+.node small{color:var(--muted);font-size:11px}
+.node.avail{border-color:var(--accent)}
+.node.avail:not(:disabled):hover{background:#17283a}
+.node.on{border-color:var(--cold);color:var(--cold)}
+.node.on small{color:var(--cold)}
+.node.lock{opacity:.4}
+.node:disabled{cursor:not-allowed}
+.tree-arrow{text-align:center;color:var(--muted);line-height:1.1}
+
+/* Forçar horizontal no celular: gira o palco quando a tela está em retrato */
+@media (orientation: portrait){
+  body.force-land .stage{position:fixed;top:100vh;left:0;width:100vh;height:100vw;max-width:none;transform-origin:top left;transform:rotate(-90deg);z-index:100;border:0;background:#000}
+  body.force-land .stage canvas{width:100%;height:100%;aspect-ratio:auto;object-fit:contain}
+  body.force-land main{max-width:none}
+}
