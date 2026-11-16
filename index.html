@@ -1,131 +1,282 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta http-equiv="pragma" content="no-cache"/>
+    <title>sofarawaste</title>
+    <link rel="icon" href="favicon.ico" />
 
-    <!-- Custom PreHead code is injected here -->
-    
+    <style>
+        html, body {
+            margin: 0; padding: 0; border: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: #000;
+            color: #ccc;
+            -webkit-user-select: none; user-select: none;
+            -webkit-touch-callout: none;
+            overscroll-behavior: none;
+        }
+        #gm4html5_div_id { position: fixed; inset: 0; }
 
-    <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name ="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta charset="utf-8"/>
+        canvas {
+            image-rendering: optimizeSpeed;
+            -webkit-interpolation-mode: nearest-neighbor;
+            touch-action: none;
+            margin: 0; padding: 0; border: 0;
+        }
 
-        <!-- Builtin injector for disabling cache -->
-        <meta http-equiv="pragma" content="no-cache"/>
+        /* Tela cheia: o canvas ocupa a janela inteira mantendo a proporção */
+        :fullscreen #canvas, :-webkit-full-screen #canvas {
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: contain;
+        }
+        :fullscreen, :-webkit-full-screen { background: #000; }
 
-        <!-- Set the title bar of the page -->
-        <title>sofarawaste</title>
+        /* Controles de toque: só aparecem em telas sensíveis ao toque */
+        .ui { position: fixed; z-index: 10; }
+        .ctl {
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(16,27,39,.72);
+            border: 1px solid rgba(127,233,255,.3);
+            color: #d6dde3;
+            border-radius: 12px;
+            width: 56px; height: 56px;
+            padding: 0;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+        }
+        .ctl svg {
+            width: 26px; height: 26px;
+            fill: none; stroke: currentColor; stroke-width: 2;
+            stroke-linecap: round; stroke-linejoin: round;
+            pointer-events: none;
+        }
+        .ctl.active { background: rgba(127,233,255,.35); }
+        .ctl:focus-visible { outline: 2px solid #ff8a1f; outline-offset: 2px; }
+        .ctl[hidden] { display: none !important; }
 
-        <!-- Custom PreStyle code is injected here -->
-        
+        #fsBtn {
+            top: max(10px, env(safe-area-inset-top, 0px));
+            right: max(10px, env(safe-area-inset-right, 0px));
+            width: 44px; height: 44px; border-radius: 10px;
+        }
+        #pauseBtn {
+            top: max(10px, env(safe-area-inset-top, 0px));
+            left: max(10px, env(safe-area-inset-left, 0px));
+            width: 44px; height: 44px; border-radius: 10px;
+            display: none;
+        }
+        @media (pointer: coarse), (hover: none) {
+            #pauseBtn { display: flex; }
+        }
 
-        <!-- Set the background colour of the document -->
-        <style>
-            body {
-                background: #0;
-                color: #cccccc;
-                margin: 0px;
-                padding: 0px;
-                border: 0px;
-            }
+        .pad {
+            bottom: max(14px, env(safe-area-inset-bottom, 0px));
+            display: none;
+        }
+        @media (pointer: coarse), (hover: none) {
+            .pad { display: grid; }
+        }
+        .padL { left: max(14px, env(safe-area-inset-left, 0px)); }
+        .padR { right: max(14px, env(safe-area-inset-right, 0px)); }
 
-            canvas {
-                image-rendering: optimizeSpeed;
-                -webkit-interpolation-mode: nearest-neighbor;
-                -ms-touch-action: none;
-                touch-action: none;
-                margin: 0px;
-                padding: 0px;
-                border: 0px;
-            }
-            :-webkit-full-screen #canvas {
-                width: 100%;
-                height: 100%;
-            }
-            :-webkit-full-screen {
-                width: 100%;
-                height: 100%;
-            }
-            
-            /* Custom Runner Styles */
-            div.gm4html5_div_class {
-                margin: 0px;
-                padding: 0px;
-                border: 0px;
-            }
-            div.gm4html5_login {
-                padding: 20px;
-                position: absolute;
-                border: solid 2px #000000;
-                background-color: #404040;
-                color:#00ff00;
-                border-radius: 15px;
-                box-shadow: #101010 20px 20px 40px;
-            }
-            div.gm4html5_cancel_button {
-                float: right;
-            }
-            div.gm4html5_login_button {
-                float: left;
-            }
-            div.gm4html5_login_header {
-                text-align: center;
-            }
-            /* END - Custom Runner Styles */
-            
-        </style>
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 56px);
+            grid-template-rows: repeat(3, 56px);
+            gap: 6px;
+        }
+        .dpad .up    { grid-column: 2; grid-row: 1; }
+        .dpad .left  { grid-column: 1; grid-row: 2; }
+        .dpad .right { grid-column: 3; grid-row: 2; }
+        .dpad .down  { grid-column: 2; grid-row: 3; }
 
-        <!-- Custom PostStyle code is injected here -->
-        
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 64px);
+            grid-template-rows: repeat(2, 64px);
+            gap: 8px;
+        }
+        .actions .ctl { width: 64px; height: 64px; }
+        .actions .ctl svg { width: 30px; height: 30px; }
 
-        <!-- Builtin injector for injecting flurry analytics code -->
-        
-    </head>
+        /* Celular em retrato: pede para girar, o jogo é na horizontal */
+        #rotate {
+            display: none;
+            position: fixed; inset: 0; z-index: 99;
+            background: #05090f;
+            align-items: center; justify-content: center; flex-direction: column;
+            text-align: center; padding: 24px; color: #d6dde3;
+            font: 16px/1.4 ui-monospace, Menlo, monospace;
+        }
+        @media (orientation: portrait) and (pointer: coarse) {
+            #rotate { display: flex; }
+        }
+    </style>
+</head>
 
-    <!-- Custom PostHead code is injected here -->
-    
+<body>
+    <div id="gm4html5_div_id">
+        <img src="SofaraWasteHTML/splash.png" id="GM4HTML5_loadingscreen" alt="Carregando" style="display:none;"/>
+        <canvas id="canvas" width="640" height="360"
+                style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+            <p>Seu navegador não suporta canvas HTML5.</p>
+        </canvas>
+    </div>
 
-    <!-- Custom PreBody code is injected here -->
-    
+    <!-- Tela cheia -->
+    <button id="fsBtn" class="ui ctl" type="button" aria-label="Tela cheia" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" id="fsIcon">
+            <path d="M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15"/>
+        </svg>
+    </button>
 
-    <body>
-        <!-- Custom BodyStart code is injected here -->
-        
+    <!-- Pausa (canto superior esquerdo) -->
+    <button id="pauseBtn" class="ui ctl" type="button" aria-label="Pausar" data-key="pause">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 6 V18 M15 6 V18" stroke-width="2.6"/>
+        </svg>
+    </button>
 
-        <div class="gm4html5_div_class" id="gm4html5_div_id">
-            
-            <!-- Builtin injector for splash screen -->
-            <img src="SofaraWasteHTML/splash.png" id="GM4HTML5_loadingscreen" alt="GameMaker:HTML5 loading screen" style="display:none;"/>
-
-            <!-- Custom PreCanvas code is injected here -->
-            
-
-            <!-- Create the canvas element the game draws to -->
-            <canvas id="canvas" width="640" height="360" style="position: absolute; top: 50%; left: 50%; bottom: -50%; right: -50%; transform: translate(-50%, -50%);">
-                
-                <p>Your browser doesn't support HTML5 canvas.</p>
-            </canvas>
-            
-            <!-- Custom PostCanvas code is injected here -->
-            
+    <!-- D-pad (esquerda) -->
+    <div class="ui pad padL">
+        <div class="dpad">
+            <button class="ctl up" data-key="up" type="button" aria-label="Cima">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 14 L12 8 L18 14"/></svg>
+            </button>
+            <button class="ctl left" data-key="left" type="button" aria-label="Esquerda">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6 L8 12 L14 18"/></svg>
+            </button>
+            <button class="ctl right" data-key="right" type="button" aria-label="Direita">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6 L16 12 L10 18"/></svg>
+            </button>
+            <button class="ctl down" data-key="down" type="button" aria-label="Baixo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 10 L12 16 L18 10"/></svg>
+            </button>
         </div>
+    </div>
 
-        <!-- Run the game code -->
-        <script type="text/javascript" src="SofaraWasteHTML/sofarawaste.js?cachebust=804228328"></script>
+    <!-- Ações (direita): interagir, minerar, dash, construir -->
+    <div class="ui pad padR">
+        <div class="actions">
+            <button class="ctl" data-key="interact" type="button" aria-label="Interagir">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="7.5"/>
+                    <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+                </svg>
+            </button>
+            <button class="ctl" data-key="build" type="button" aria-label="Construir">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4" y="4" width="16" height="16" rx="3"/>
+                    <path d="M12 8 V16 M8 12 H16"/>
+                </svg>
+            </button>
+            <button class="ctl" data-key="mine" type="button" aria-label="Minerar">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 20 L13 11"/>
+                    <path d="M3 9 Q12 1 21 9 L19.5 10 Q12 5.5 4.5 10 Z"/>
+                </svg>
+            </button>
+            <button class="ctl" data-key="dash" type="button" aria-label="Dash">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 6 L11 12 L5 18"/>
+                    <path d="M13 6 L19 12 L13 18"/>
+                </svg>
+            </button>
+        </div>
+    </div>
 
-        <!-- Builtin injector for injecting runner path -->
-        
+    <div id="rotate">
+        <div>
+            <div style="width:46px;height:78px;margin:0 auto;border:3px solid #ff8a1f;border-radius:9px;"></div>
+            <p>Gire o celular para jogar na horizontal.</p>
+        </div>
+    </div>
 
-        <script>window.onload = GameMaker_Init;</script>
+    <script>
+        // Códigos de tecla que o jogo lê (keyboard_check).
+        // Esquerda/cima/direita/baixo = setas; interagir = E; minerar = Espaço;
+        // dash = Shift; construir = Tab; pausar = Esc (27).
+        // Se algum botão não responder no jogo, troque o código aqui.
+        var KEYS = {
+            left: 37, up: 38, right: 39, down: 40,
+            interact: 69, mine: 32, dash: 16, build: 9, pause: 27
+        };
 
-        <!-- Builtin injector for injecting google analytics code -->
-        
+        function fireKey(type, keyCode) {
+            var ev = new KeyboardEvent(type, { bubbles: true, cancelable: true });
+            // keyCode/which não podem ser passados no construtor; força o valor.
+            Object.defineProperty(ev, 'keyCode', { get: function () { return keyCode; } });
+            Object.defineProperty(ev, 'which',   { get: function () { return keyCode; } });
+            window.dispatchEvent(ev);
+        }
 
-        <!-- Custom BodyEnd code is injected here -->
-        
-    </body>
+        // Botões de toque: pressionar = keydown, soltar = keyup
+        document.querySelectorAll('[data-key]').forEach(function (btn) {
+            var code = KEYS[btn.getAttribute('data-key')];
+            var isPause = btn.getAttribute('data-key') === 'pause';
+            function down(e) {
+                e.preventDefault();
+                btn.classList.add('active');
+                fireKey('keydown', code);
+                if (isPause) { setTimeout(function () { fireKey('keyup', code); btn.classList.remove('active'); }, 60); }
+            }
+            function up(e) {
+                e.preventDefault();
+                btn.classList.remove('active');
+                if (!isPause) fireKey('keyup', code);
+            }
+            btn.addEventListener('pointerdown', down);
+            btn.addEventListener('pointerup', up);
+            btn.addEventListener('pointercancel', up);
+            btn.addEventListener('pointerleave', up);
+            btn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+        });
 
-    <!-- Custom PostBody code is injected here -->
-    
+        // Tela cheia
+        (function () {
+            var btn = document.getElementById('fsBtn');
+            var icon = document.getElementById('fsIcon');
+            var el = document.documentElement;
+            var canReq = !!(el.requestFullscreen || el.webkitRequestFullscreen);
+            var isFs = function () {
+                return !!(document.fullscreenElement || document.webkitFullscreenElement);
+            };
+            var ENTER = 'M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15';
+            var EXIT  = 'M9 4 V9 H4 M20 9 H15 V4 M15 20 V15 H20 M4 15 H9 V20';
+
+            if (!canReq) { btn.hidden = true; return; } // iPhone/Safari não suporta
+
+            function refresh() {
+                icon.firstElementChild.setAttribute('d', isFs() ? EXIT : ENTER);
+                btn.setAttribute('aria-label', isFs() ? 'Sair da tela cheia' : 'Tela cheia');
+            }
+
+            btn.hidden = false;
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                try {
+                    if (isFs()) {
+                        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+                    } else {
+                        (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+                    }
+                } catch (err) { console.warn('Tela cheia indisponível:', err); }
+            });
+            document.addEventListener('fullscreenchange', refresh);
+            document.addEventListener('webkitfullscreenchange', refresh);
+            refresh();
+        })();
+    </script>
+
+    <script type="text/javascript" src="SofaraWasteHTML/sofarawaste.js?cachebust=804228328"></script>
+    <script>window.onload = GameMaker_Init;</script>
+</body>
 </html>
